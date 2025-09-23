@@ -29,6 +29,28 @@ impl Scanner {
     fn next_vec<T: std::str::FromStr>(&mut self, n: usize) -> Vec<T> {
         (0..n).map(|_| self.next()).collect()
     }
+
+    fn next_line(&mut self) -> String {
+        
+        while self.index < self.input.len()
+            && self.input[self.index].is_ascii_whitespace()
+        {
+            self.index += 1;
+        }
+        let start = self.index;
+        while self.index < self.input.len()
+            && self.input[self.index] != b'\n'
+        {
+            self.index += 1;
+        }
+        let line = std::str::from_utf8(&self.input[start..self.index])
+            .unwrap()
+            .to_string();
+        if self.index < self.input.len() && self.input[self.index] == b'\n' {
+            self.index += 1; 
+        }
+        line
+    }
 }
 
 fn solve(scan: &mut Scanner, out: &mut dyn Write) {
@@ -39,5 +61,5 @@ fn main() {
     let mut scan = Scanner::new();
     let mut out = io::BufWriter::new(io::stdout());
     solve(&mut scan, &mut out);
-    
+
 }
