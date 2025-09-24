@@ -8,3 +8,93 @@ this ver badsically uses Scanner + BufWriter,
 reads all stdin once
 
 
+## Comparing Floats
+
+floats are messy , they tend to be less precise , 0.99999 is sometimes NOT 1 , whereas problems require 1 .
+
+a better way to compare floats is chceking approximity
+
+```rust
+if (num::abs(a-b) < 1e-9){
+    //a and b are aproximately equal
+}
+```
+suppose 
+``` 
+x = 0.3 * 3.0 + 0.1 
+```
+this should give (or atleast expected value) is 1.
+but due the rounding errors we get something like 0.99999999
+which in turn may get you a ```WA```
+
+A fix is to convert floats to integers before calc and then print out the result after dividing.
+like , 
+``` 
+x = 3 * 3 +1 
+```
+then print out ``` x/10 ```
+
+### Caveats
+
+- If inputs are arbitrary floats (like results of sqrt(2)), scaling to integers won’t help; you must use epsilon comparison.
+
+- Integer scaling works best in competitive programming problems where input is specified as decimals with ≤k digits after the decimal point.
+
+in summary : For fixed decimal inputs → scale to integers, do all calculations in integers, then divide back.
+
+---
+## trimming 
+### macros
+
+we can define a macro which can be used in your program in one line (think of it as calling a function)
+```rust
+macro_rules! fctr{
+    ($n:expr) => {{
+        fn fact(mut n: u64) -> u64 {
+            let mut res = 1;
+            while n > 1 {
+                res *= n;
+                n -= 1;
+            }
+            res
+        }
+        fact($n)
+    }};
+}
+```
+
+so in your code just call fctr(n) 
+
+## nCr, nPr and Factorials  
+
+when dealing with combinatorics (choose / arrange problems), you often need factorials.  
+but factorials grow too fast → `20!` already overflows u64.  
+so in CP we always calculate them modulo a big prime like `1_000_000_007` or `998_244_353`.  
+
+### precomputation  
+
+instead of recomputing factorials and inverses every time, we precompute them once in O(n).  
+this gives:  
+- `fact[i] = i! % MOD`  
+- `inv_fact[i] = (i!)^-1 % MOD`  
+
+after that, each query of nCr / nPr is O(1).  
+
+```rust
+fn ncr(n: usize, r: usize, fact: &Vec<u64>, inv_fact: &Vec<u64>) -> u64 {
+    if r > n { return 0; }
+    fact[n] * inv_fact[r] % MOD * inv_fact[n - r] % MOD
+}
+
+fn npr(n: usize, r: usize, fact: &Vec<u64>, inv_fact: &Vec<u64>) -> u64 {
+    if r > n { return 0; }
+    fact[n] * inv_fact[n - r] % MOD
+}
+```
+
+## Modular Power  +Inverse
+needed for computing inverse factorials:
+```rust
+fn modexp(mut base: u64, mut exp: u64, m: u64) -> u64 { ... }
+fn modinv(x: u64) -> u64 { modexp(x, MOD-2, MOD) }
+```
