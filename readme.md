@@ -142,3 +142,60 @@ Because factors come in pairs one factor in each pair must be less than or equal
 therefore, to find all factors of a number,we only need to check numbers from 1 to √n.
 For every factor found in this range, we can compute its paired factor using n / i.
 This reduces the time complexity significantly compared to checking all numbers up to n. i.e from O(n) to O(sqrt(n)).
+
+## Prime numbers
+We loop through all numbers from 2 up to the square root of the given number and check if any of them divide it evenly. If a divisor is found, we return false. If no divisors are found, we return true, since the number is not divisible by any number in that range.
+why this works?
+
+Suppose a number N is not prime. Then it can be expressed as:
+` N = A x B`
+where `1<A≤B<N` Notice that `A` must be less than or equal to `sqrt(N)`; otherwise, `AxB` will exceed `N` since `AxA>N` and `A<=B` `=>` `AxB>N`. 
+Therefore, it is sufficient to check for divisors only up to `sqrt(N)`
+
+```rust
+fn prime(n:usize) -> bool{
+    let mut i:usize = 2;
+    while i*i<=n {
+        if n%i == 0 {
+            return false;
+        }
+        i+=1;
+    }
+    return true;
+}
+```
+
+### Sieve of Eratosthenes
+The Sieve of Eratosthenes is an efficient algorithm to find all primes up to a specified integer N.
+with Time Complexity O(log(log(n))).
+
+
+#### Rust Implementation
+```rust
+fn sieve(n: usize) -> Vec<usize> {
+    let mut is_prime = vec![true; n + 1];
+    is_prime[0] = false;
+    is_prime[1] = false;
+    let mut primes = Vec::new();
+    for p in 2..=n {
+        if is_prime[p] {
+            primes.push(p);
+            // Start marking multiples from p * p
+            // because smaller multiples would have already been marked
+            let mut i = p * p;
+            while i <= n {
+                is_prime[i] = false;
+                i += p;
+            }
+        }
+    }
+    primes
+}
+```
+
+### prime factorization
+#### Algorithm (O(sqrt(n)))
+1. **Handle 2 Separately:** We check for divisibility by 2 first. This allows us to skip all even numbers in the main loop, effectively doubling the speed.
+2. **Trial Division:** Starting from $i = 3$, we check every odd number up to $\sqrt{N}$. 
+3. **Reduction:** Whenever a factor $i$ is found, we divide the number by $i$ repeatedly until it is no longer divisible, counting the occurrences.
+4. **Final Prime:** If after the loop the number is still greater than 1, the remaining value must be a prime number.

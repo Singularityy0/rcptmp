@@ -1,5 +1,5 @@
+use std::collections::BTreeMap;
 use std::io::{self, Read, Write};
-
 const MOD: u64 = 1000000007;
 
 struct Scanner {
@@ -69,7 +69,7 @@ fn modexp(mut base: u64, mut exp: u64, m: u64) -> u64 {
         }
     }
 }
-
+#[allow(dead_code)]
 fn gcd(mut a: usize, mut b: usize) -> usize {
     if a == b {
         return a;
@@ -96,7 +96,7 @@ fn fltinv(n: u64, m: u64) -> u64 {
     }
     return modexp(n, m - 2, m);
 }
-
+#[allow(dead_code)]
 fn intsqrt(n: usize) -> usize {
     if n <= 1 {
         return n;
@@ -116,7 +116,7 @@ fn intsqrt(n: usize) -> usize {
     }
     ans
 }
-
+#[allow(dead_code)]
 fn factors(n: i128) -> Vec<i128> {
     let mut fcts: Vec<i128> = Vec::new();
     let mut i: i128 = 1;
@@ -165,6 +165,67 @@ fn npr(n: usize, r: usize, fact: &Vec<u64>, inv_fact: &Vec<u64>) -> u64 {
     fact[n] * inv_fact[n - r] % MOD
 }
 
+#[allow(dead_code)]
+fn sieve(n: usize) -> Vec<usize> {
+    if n < 2 {
+        return vec![];
+    }
+    let mut is_prime = vec![true; n + 1];
+    is_prime[0] = false;
+    is_prime[1] = false;
+    let mut primes = Vec::with_capacity(n / 10);
+    primes.push(2);
+    for i in (4..=n).step_by(2) {
+        is_prime[i] = false;
+    }
+    let mut i = 3;
+    while i * i <= n {
+        if is_prime[i] {
+            for j in (i * i..=n).step_by(2 * i) {
+                is_prime[j] = false;
+            }
+        }
+        i += 2;
+    }
+    for i in (3..=n).step_by(2) {
+        if is_prime[i] {
+            primes.push(i);
+        }
+    }
+    primes
+}
+
+#[allow(dead_code)]
+
+fn pfactors(mut n: u64) -> BTreeMap<u64, u32> {
+    let mut fcts1 = BTreeMap::new();
+    if n % 2 == 0 {
+        let mut count = 0;
+        while n % 2 == 0 {
+            count += 1;
+            n /= 2;
+        }
+        fcts1.insert(2, count);
+    }
+    let mut i = 3;
+    while i * i <= n {
+        if n % i == 0 {
+            let mut count = 0;
+            while n % i == 0 {
+                count += 1;
+                n /= i;
+            }
+            fcts1.insert(i, count);
+        }
+        i += 2;
+    }
+    if n > 1 {
+        fcts1.insert(n, 1);
+    }
+
+    fcts1
+}
+
 fn solve(scan: &mut Scanner, out: &mut dyn Write) {
     let mut n: usize = scan.next();
     let a: usize = scan.next();
@@ -185,6 +246,8 @@ fn solve(scan: &mut Scanner, out: &mut dyn Write) {
     let permutations = npr(n1, r, &fact, &inv_fact);
     writeln!(out, "15C3 = {}", combinations).ok();
     writeln!(out, "15P3 = {}", permutations).ok();
+    writeln!(out, "{:?}", sieve(n)).ok();
+    writeln!(out, "{:?}", pfactors(n)).ok();
 }
 
 fn main() {
