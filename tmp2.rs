@@ -10,7 +10,10 @@ impl Scanner {
     fn new() -> Self {
         let mut input = String::new();
         io::stdin().read_to_string(&mut input).unwrap();
-        Self { input: input.into_bytes(), index: 0 }
+        Self {
+            input: input.into_bytes(),
+            index: 0,
+        }
     }
     fn next<T: std::str::FromStr>(&mut self) -> T {
         while self.index < self.input.len() && self.input[self.index].is_ascii_whitespace() {
@@ -48,19 +51,86 @@ impl Scanner {
 }
 #[allow(dead_code)]
 fn modexp(mut base: u64, mut exp: u64, m: u64) -> u64 {
-    let mut res = 1;
-    while exp > 0 {
-        if exp & 1 == 1 {
-            res = res * base % m;
-        }
-        base = base * base % m;
-        exp >>= 1;
+    let mut ans = 1;
+    if exp <= 0 {
+        return 1;
     }
-    res
+    loop {
+        if exp == 1 {
+            return (ans * base) % m;
+        }
+        if exp & 1 == 0 {
+            base = (base * base) % m;
+            exp >>= 1;
+            continue;
+        } else {
+            ans = (ans * base) % m;
+            exp -= 1;
+        }
+    }
 }
+
+fn gcd(mut a: usize, mut b: usize) -> usize {
+    if a == b {
+        return a;
+    }
+    if b > a {
+        std::mem::swap(&mut a, &mut b);
+    }
+    while b > 0 {
+        let temp = a;
+        a = b;
+        b = temp % b;
+    }
+    return a;
+}
+
+fn lcm(a: usize, b: usize) -> usize {
+    return a * (b / gcd(a, b));
+}
+
 #[allow(dead_code)]
-fn fltinv(x: u64) -> u64 {
-    modexp(x, MOD - 2, MOD)
+fn fltinv(n: u64, m: u64) -> u64 {
+    if m <= 1 || gcd(n as usize, m as usize) > 1 {
+        return 0;
+    }
+    return modexp(n, m - 2, m);
+}
+
+fn intsqrt(n: usize) -> usize {
+    if n <= 1 {
+        return n;
+    }
+    let mut low = 1;
+    let mut high = n;
+    let mut ans = 0;
+
+    while low <= high {
+        let mid = low + (high - low) / 2;
+        if mid <= n / mid {
+            ans = mid;
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    ans
+}
+
+fn factors(n: i128) -> Vec<i128> {
+    let mut fcts: Vec<i128> = Vec::new();
+    let mut i: i128 = 1;
+    while i * i <= n {
+        if n % i == 0 {
+            fcts.push(i);
+            if i * i != n {
+                fcts.push(n / i);
+            }
+        }
+        i += 1;
+    }
+    fcts.sort();
+    return fcts;
 }
 #[allow(dead_code)]
 fn pcfact(n: usize) -> (Vec<u64>, Vec<u64>) {
@@ -71,7 +141,7 @@ fn pcfact(n: usize) -> (Vec<u64>, Vec<u64>) {
         fact[i] = fact[i - 1] * (i as u64) % MOD;
     }
 
-    inv_fact[n] = fltinv(fact[n]);
+    inv_fact[n] = fltinv(fact[n], MOD);
     for i in (1..n).rev() {
         inv_fact[i] = inv_fact[i + 1] * ((i + 1) as u64) % MOD;
     }
@@ -83,7 +153,9 @@ fn ncr(n: usize, r: usize, fact: &Vec<u64>, inv_fact: &Vec<u64>) -> u64 {
     if r > n {
         return 0;
     }
-    fact[n] * inv_fact[r] % MOD * inv_fact[n - r] % MOD
+    let num = fact[n] as u128;
+    let den = (inv_fact[r] as u128 * inv_fact[n - r] as u128) % MOD as u128;
+    ((num * den) % MOD as u128) as u64
 }
 #[allow(dead_code)]
 fn npr(n: usize, r: usize, fact: &Vec<u64>, inv_fact: &Vec<u64>) -> u64 {
@@ -94,7 +166,25 @@ fn npr(n: usize, r: usize, fact: &Vec<u64>, inv_fact: &Vec<u64>) -> u64 {
 }
 
 fn solve(scan: &mut Scanner, out: &mut dyn Write) {
-    
+    let mut n: usize = scan.next();
+    let a: usize = scan.next();
+    let b: usize = scan.next();
+    let n1: usize = scan.next();
+    let r: usize = scan.next();
+    let a1 = factors(n as i128);
+    writeln!(out, "{:?}", a1).ok();
+    let gc = gcd(a, b);
+    writeln!(out, "{} {}", gc, lcm(a, b)).ok();
+    let val = (5 * fltinv(3, MOD)) % MOD;
+    writeln!(out, "{}", val).ok();
+    writeln!(out, "{}", modexp(2, 100000, 1000000007)).ok();
+    writeln!(out, "{:?}", pcfact(n)).ok();
+    writeln!(out, "{}", intsqrt(n)).ok();
+    let (fact, inv_fact) = pcfact(n);
+    let combinations = ncr(n1, r, &fact, &inv_fact);
+    let permutations = npr(n1, r, &fact, &inv_fact);
+    writeln!(out, "15C3 = {}", combinations).ok();
+    writeln!(out, "15P3 = {}", permutations).ok();
 }
 
 fn main() {

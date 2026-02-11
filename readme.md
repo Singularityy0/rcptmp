@@ -93,8 +93,52 @@ fn npr(n: usize, r: usize, fact: &Vec<u64>, inv_fact: &Vec<u64>) -> u64 {
 ```
 
 ## Modular Power  +Inverse
+largest value that we can store in Rust with numerical datatype is 2^128 , i.e using u128/i128
+hence for finding 2^1000 modulo MOD will lead to an overflow hence we perform modulo exponentiation using divide and conquer algo O(log(exp)).
+
 needed for computing inverse factorials:
 ```rust
-fn modexp(mut base: u64, mut exp: u64, m: u64) -> u64 { ... }
+fn modexp(mut base: usize, mut exp: usize, m: usize) -> usize { ... }
 fn modinv(x: u64) -> u64 { modexp(x, MOD-2, MOD) }
 ```
+
+## NT properties(ctm)
+- (a + b) mod m = ((a mod m) + (b mod m)) mod m
+- (a x b) mod m = ((a mod m) x (b mod m)) mod m
+
+## Integer Square Root
+if you have to find a floor of square root of. say, 10^18 , using the 
+```rust 
+sqrt(n)
+```
+function and then taking its floor will give inaccurate results (because of f64)
+hence we use a "trick" , the common algo as follows 
+``` rust
+let mut i = 0;
+if n <= 1 {
+    return n;
+}
+while (i+1)*(i+1) <= n{
+    i+=1;
+    
+}
+return i;
+```
+The above algo is has Time complexity of O(sqrt(n)), which can improved to O(log(n)) using simple Binary search implementation.
+
+### Algorithm 
+- If the number is 0 or 1, return the number itself.
+- low = 1 and high = 1.1 × 10⁹.
+- midpoint: mid = low + (high - low)/2.
+- If mid × mid equals the number, return mid.
+- If mid × mid is less than the number, store mid as the current answer and set low = mid + 1.
+- Otherwise, set high = mid − 1.
+- Repeat steps 3 to 6 until low exceeds high.
+- When the loop ends, return the last stored value of mid.
+
+## Listing Factors 
+sometimes we have to list factors of a number, one efficient approach i can think of is looking it as pairs.
+Because factors come in pairs one factor in each pair must be less than or equal to √n it is impossible for two numbers both greater than √n to multiply together and give n.
+therefore, to find all factors of a number,we only need to check numbers from 1 to √n.
+For every factor found in this range, we can compute its paired factor using n / i.
+This reduces the time complexity significantly compared to checking all numbers up to n. i.e from O(n) to O(sqrt(n)).
